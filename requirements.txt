@@ -1,0 +1,7 @@
+streamlit
+python-dotenv
+requests
+langchain
+langchain-core
+langchain-google-genai
+tavily-python
