@@ -27,8 +27,8 @@ st.set_page_config(
 # Agent (cached so it isn't rebuilt on every Streamlit rerun)
 # ─────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
-def build_agent():
-    return _build_agent(DEFAULT_MODEL)
+def build_agent(model_name: str):
+    return _build_agent(model_name)
 
 def run_agent(agent, history: list[dict]):
     """Run the agent using only recent conversation history."""
