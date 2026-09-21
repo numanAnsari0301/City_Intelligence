@@ -13,35 +13,18 @@ from tavily import TavilyClient
 
 DEFAULT_MODEL = "gemini-3.6-flash"
 
-SYSTEM_PROMPT = """You are Mr. Mausam Khabri, a helpful city assistant.
+SYSTEM_PROMPT = """You are Mr. Mausam Khabri.
 
-You ONLY answer questions related to:
-1. Weather of a city or area
-2. Latest news of a city or area
+You ONLY answer questions about:
+- weather
+- local news
 
-For weather-related questions, you can provide information such as:
-- Current temperature
-- Feels-like temperature
-- Humidity
-- Wind speed and direction
-- UV index
-- Cloud conditions
-- Visibility
-- Sunrise and sunset
-- Current weather conditions
+Use get_weather for weather questions.
+Use get_news for news questions.
+Use both tools when the user asks for both.
 
-For news-related questions, provide the latest relevant news about the
-requested city or area using the available news tool.
-
-Always use the available tools to get real and up-to-date information.
-Do NOT guess or make up weather or news information.
-
-If the user asks anything unrelated to weather or local news, DO NOT answer
-the question and DO NOT use any tool.
-
-Mr. Mausam Khabri is strictly restricted to weather and local-news-related
-questions only.
-
+Do not use unnecessary tools.
+Do not guess information.
 For unrelated questions, reply exactly:
 "Sorry, I can only help with weather and local news-related questions."
 """
@@ -56,7 +39,7 @@ def get_weather(city: str) -> str:
         f"?q={city}&appid={api_key}&units=metric"
     )
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=5)
         data = response.json()
     except requests.RequestException as e:
         return f"Error : Could not reach weather service ({e})"
@@ -70,16 +53,18 @@ def get_weather(city: str) -> str:
 
 
 # 2. Tavily news tool
+tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY")) 
+ 
 @tool
 def get_news(city: str) -> str:
     """Get the latest news of the city in bullet points
     Input should be city name like 'Bhopal', 'Deoria',etc"""
-    tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+   
     query = f"latest news in {city}"
 
     try:
         response = tavily_client.search(
-            query=query, search_depth="advanced", max_results=5
+            query=query, search_depth="basic", max_results=3
         )
     except Exception as e:
         return f"Error : Could not fetch news ({e})"
@@ -115,7 +100,7 @@ def get_weather_details(city: str) -> dict:
         r = requests.get(
             "https://api.openweathermap.org/data/2.5/weather",
             params={"q": city, "appid": os.getenv("OPENWEATHER_API_KEY"), "units": "metric"},
-            timeout=10,
+            timeout=5,
         )
         data = r.json()
     except (requests.RequestException, ValueError) as e:
@@ -168,7 +153,7 @@ def get_weather_details(city: str) -> dict:
                     "forecast_days": 1,
                     "timezone": "auto",
                 },
-                timeout=10,
+                timeout=5,
             ).json()
             details["uv_now"] = uv.get("current", {}).get("uv_index")
             daily = uv.get("daily", {}).get("uv_index_max") or [None]
@@ -210,6 +195,7 @@ if __name__ == "__main__":
         if user_input.lower() == "exit":
             break
         messages.append({"role": "user", "content": user_input})
+        messages = messages[-6:]  # Keep only recent conversation
         result = agent.invoke({"messages": messages})
         messages = [
             {"role": "user" if m.type == "human" else "assistant", "content": message_text(m.content)}

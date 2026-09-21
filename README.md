@@ -143,4 +143,3 @@ You can also change the model from the sidebar settings in the Streamlit app.
 ---
 
 Made with ❤️ using LangChain, Gemini, OpenWeather, and Tavily.
-
