@@ -25,7 +25,7 @@ I built this project to learn how AI agents work with tools. The assistant, **Mr
 
 ## Live Demo
 
-👉 [**Try Mr. Mausam Khabri Live**]([https://your-live-demo-url.com](https://mausam-khabri.onrender.com/))
+👉 [**Try Mr. Mausam Khabri Live**](https://mausam-khabri.onrender.com/)
 
 Ask about:
 
