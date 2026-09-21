@@ -27,39 +27,62 @@ st.set_page_config(
 # Agent (cached so it isn't rebuilt on every Streamlit rerun)
 # ─────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
-def build_agent(model_name: str):
-    return _build_agent(model_name)
-
+def build_agent():
+    return _build_agent(DEFAULT_MODEL)
 
 def run_agent(agent, history: list[dict]):
-    """Send the whole conversation, return (reply_text, tools_used)."""
-    sent = [{"role": m["role"], "content": m["content"]} for m in history]
+    """Run the agent using only recent conversation history."""
+
+    # Keep only the latest 6 messages
+    recent_history = history[-6:]
+
+    sent = [
+        {
+            "role": m["role"],
+            "content": m["content"],
+        }
+        for m in recent_history
+    ]
+
     result = agent.invoke({"messages": sent})
 
     new_messages = result["messages"][len(sent):]
+
     tools_used = []
+
     for msg in new_messages:
+
         if isinstance(msg, AIMessage) and msg.tool_calls:
+
             for call in msg.tool_calls:
+
                 city = call["args"].get("city", "")
-                tools_used.append({"tool": call["name"], "city": city})
-        if isinstance(msg, ToolMessage) and message_text(msg.content).startswith(
-            "Error"
-        ):
-            # mark the most recent tool as failed
-            if tools_used:
-                tools_used[-1]["failed"] = True
+
+                tools_used.append(
+                    {
+                        "tool": call["name"],
+                        "city": city,
+                    }
+                )
+
+        elif isinstance(msg, ToolMessage):
+
+            if message_text(msg.content).startswith("Error"):
+
+                if tools_used:
+                    tools_used[-1]["failed"] = True
 
     final = next(
         (
             message_text(m.content)
             for m in reversed(new_messages)
-            if isinstance(m, AIMessage) and message_text(m.content).strip()
+            if isinstance(m, AIMessage)
+            and message_text(m.content).strip()
         ),
         "I couldn't put together an answer. Try asking again.",
     )
-    return final, tools_used
 
+    return final, tools_used
 
 # ─────────────────────────────────────────────────────────────
 # Styling
