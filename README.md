@@ -47,14 +47,14 @@ Ask about:
 ---
 
 ## Project Structure
-
+**
 City_Intelligence/
 ├── app.py              # Streamlit chat UI
 ├── agent.py            # Agent setup and tools
 ├── requirements.txt
 ├── .env                # API keys (not committed)
 └── README.md
-
+**
 ---
 
 ## Getting Started
@@ -86,9 +86,9 @@ pip install -r requirements.txt
 
 Create a `.env` file in the project root:
 
-GOOGLE_API_KEY=your_google_api_key
-OPENWEATHER_API_KEY=your_openweather_api_key
-TAVILY_API_KEY=your_tavily_api_key
+- GOOGLE_API_KEY=your_google_api_key
+- OPENWEATHER_API_KEY=your_openweather_api_key
+- TAVILY_API_KEY=your_tavily_api_key
 
 
 Get your API keys here:
